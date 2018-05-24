@@ -5,6 +5,9 @@ import (
 	"time"
 )
 
+/*
+Background Context
+*/
 type BackgroundContext interface {
 	Set(name string, value interface{})
 	Get(name string) interface{}
@@ -26,8 +29,7 @@ type backgroundContext struct {
 }
 
 func (bc *backgroundContext) Set(name string, value interface{}) { bc.ctx[name] = value }
-
-func (bc *backgroundContext) Get(name string) interface{} { return bc.ctx[name] }
+func (bc *backgroundContext) Get(name string) interface{}        { return bc.ctx[name] }
 
 func (bc *backgroundContext) Persist(name string, fn func() (interface{}, error)) interface{} {
 	return persistWithHealthCheck(bc.maxAttempt, bc.timeout, bc.ctx, name, fn, func(err error) {

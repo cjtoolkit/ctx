@@ -7,6 +7,9 @@ import (
 
 const contextName = "context-e0881a4717c598b16eb965d396f1aff6"
 
+/*
+For storing anything related to user request
+*/
 type Context interface {
 	Title() string
 	SetTitle(title string)
@@ -46,26 +49,21 @@ type contextHolder struct {
 	res   http.ResponseWriter
 }
 
-func (c *contextHolder) Title() string { return c.title }
-
-func (c *contextHolder) SetTitle(title string) { c.title = title }
-
-func (c *contextHolder) Data(name string) interface{} { return c.data[name] }
-
+func (c *contextHolder) Title() string                          { return c.title }
+func (c *contextHolder) SetTitle(title string)                  { c.title = title }
+func (c *contextHolder) Data(name string) interface{}           { return c.data[name] }
 func (c *contextHolder) SetData(name string, value interface{}) { c.data[name] = value }
 
 func (c *contextHolder) PersistData(name string, fn func() interface{}) interface{} {
 	return persist(c.data, name, fn)
 }
 
-func (c *contextHolder) Dep(name string) interface{} { return c.dep[name] }
-
+func (c *contextHolder) Dep(name string) interface{}           { return c.dep[name] }
 func (c *contextHolder) SetDep(name string, value interface{}) { c.dep[name] = value }
 
 func (c *contextHolder) PersistDep(name string, fn func() interface{}) interface{} {
 	return persist(c.dep, name, fn)
 }
 
-func (c *contextHolder) Request() *http.Request { return c.req }
-
+func (c *contextHolder) Request() *http.Request              { return c.req }
 func (c *contextHolder) ResponseWriter() http.ResponseWriter { return c.res }
