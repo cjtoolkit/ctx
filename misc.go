@@ -1,6 +1,8 @@
 package ctx
 
 import (
+	"errors"
+	"log"
 	"time"
 )
 
@@ -10,7 +12,6 @@ func persistWithHealthCheck(
 	m map[string]interface{},
 	name string,
 	fn func() (interface{}, error),
-	failCallBack func(err error),
 ) interface{} {
 	if value, found := m[name]; found {
 		return value
@@ -27,7 +28,7 @@ func persistWithHealthCheck(
 
 		attempt++
 		if attempt >= maxAttempt {
-			failCallBack(err)
+			log.Panic(err)
 			break
 		}
 		time.Sleep(timeout)
@@ -45,4 +46,10 @@ func persist(m map[string]interface{}, name string, fn func() interface{}) inter
 	m[name] = value
 
 	return value
+}
+
+func panicOnFound(found bool) {
+	if found {
+		panic(errors.New("Already set! Use a different name please!"))
+	}
 }
