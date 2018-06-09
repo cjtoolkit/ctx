@@ -102,3 +102,19 @@ func TestPanicIfFound(t *testing.T) {
 		panicOnFound(false)
 	})
 }
+
+func TestCheckForLockOrReturnValue(t *testing.T) {
+	t.Run("Is Locked", func(t *testing.T) {
+		defer func() {
+			if recover() == nil {
+				t.Error("Recover should not be nil")
+			}
+		}()
+
+		checkForLockOrReturnValue(lock{})
+	})
+
+	t.Run("Is Unlocked", func(t *testing.T) {
+		checkForLockOrReturnValue("hello")
+	})
+}
