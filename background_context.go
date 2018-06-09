@@ -38,3 +38,10 @@ func (bc *backgroundContext) Get(name string) interface{} { return bc.ctx[name] 
 func (bc *backgroundContext) Persist(name string, fn func() (interface{}, error)) interface{} {
 	return persistWithHealthCheck(bc.maxAttempt, bc.timeout, bc.ctx, name, fn)
 }
+
+func ClearBackgroundContext(context BackgroundContext) {
+	{
+		context := context.(*backgroundContext)
+		context.ctx = nil
+	}
+}
