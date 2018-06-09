@@ -39,6 +39,9 @@ func (bc *backgroundContext) Persist(name string, fn func() (interface{}, error)
 	return persistWithHealthCheck(bc.maxAttempt, bc.timeout, bc.ctx, name, fn)
 }
 
+/*
+Clear Background Context
+*/
 func ClearBackgroundContext(context BackgroundContext) {
 	{
 		context := context.(*backgroundContext)
