@@ -15,14 +15,24 @@ type Context interface {
 	SetTitle(title string)
 	Data(name string) interface{}
 	SetData(name string, value interface{})
+
+	// The fn function only gets called if there is a cache miss.
 	PersistData(name string, fn func() interface{}) interface{}
 	Dep(name string) interface{}
 	SetDep(name string, value interface{})
+
+	// The fn function only gets called if there is a cache miss.
 	PersistDep(name string, fn func() interface{}) interface{}
 	Request() *http.Request
 	ResponseWriter() http.ResponseWriter
 }
 
+/*
+Create new context for user request, also saves context inside *http.Request
+without disturbing the context of the user request.
+
+Avoid using this concurrently.
+*/
 func NewContext(res http.ResponseWriter, req *http.Request) (*http.Request, Context) {
 	ctx := &contextHolder{
 		title: "Untitled",
@@ -37,6 +47,9 @@ func NewContext(res http.ResponseWriter, req *http.Request) (*http.Request, Cont
 	return req, ctx
 }
 
+/*
+Pulls out user context that was saved to the *http.Request.
+*/
 func GetContext(req *http.Request) Context {
 	return req.Context().Value(contextName).(Context)
 }

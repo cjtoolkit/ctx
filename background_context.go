@@ -10,9 +10,16 @@ Background Context
 type BackgroundContext interface {
 	Set(name string, value interface{})
 	Get(name string) interface{}
+
+	// The fn function only gets called if there is a cache miss. Return error as nil to bypass health check.
 	Persist(name string, fn func() (interface{}, error)) interface{}
 }
 
+/*
+Create new background context.
+
+Avoid using this concurrently.
+*/
 func NewBackgroundContext() BackgroundContext {
 	return &backgroundContext{
 		maxAttempt: 5,
@@ -40,11 +47,22 @@ func (bc *backgroundContext) Persist(name string, fn func() (interface{}, error)
 }
 
 /*
-Clear Background Context
+Clear Background Context, best used with a defer function after creating the new context.
 */
 func ClearBackgroundContext(context BackgroundContext) {
-	{
-		context := context.(*backgroundContext)
-		context.ctx = nil
-	}
+	context.(*backgroundContext).ctx = nil
+}
+
+/*
+Set Health Check Max Attempt on Background Context
+*/
+func SetHealthCheckMaxAttemptOnBackgroundContext(context BackgroundContext, maxAttempt int) {
+	context.(*backgroundContext).maxAttempt = maxAttempt
+}
+
+/*
+Set Health Check Time Out on Background Context
+*/
+func SetHealthCheckTimeOutOnBackgroundContext(context BackgroundContext, timeout time.Duration) {
+	context.(*backgroundContext).timeout = timeout
 }
