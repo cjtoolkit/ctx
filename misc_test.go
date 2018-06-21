@@ -7,7 +7,7 @@ import (
 
 func TestPersistWithHealthCheck(t *testing.T) {
 	t.Run("No error", func(t *testing.T) {
-		m := map[string]interface{}{}
+		m := map[interface{}]interface{}{}
 		name := "test"
 
 		persistWithHealthCheck(2, 0, m, name, func() (interface{}, error) {
@@ -20,7 +20,7 @@ func TestPersistWithHealthCheck(t *testing.T) {
 	})
 
 	t.Run("Has error on first, none on second", func(t *testing.T) {
-		m := map[string]interface{}{}
+		m := map[interface{}]interface{}{}
 		name := "test"
 
 		attempt := -1
@@ -38,7 +38,7 @@ func TestPersistWithHealthCheck(t *testing.T) {
 	})
 
 	t.Run("Reach maxAttempt", func(t *testing.T) {
-		m := map[string]interface{}{}
+		m := map[interface{}]interface{}{}
 		name := "test"
 
 		defer func() {
@@ -61,7 +61,7 @@ func TestPersistWithHealthCheck(t *testing.T) {
 func TestPersist(t *testing.T) {
 	t.Run("Set", func(t *testing.T) {
 		name := "test"
-		m := map[string]interface{}{}
+		m := map[interface{}]interface{}{}
 
 		persist(m, name, func() interface{} {
 			return "set"
@@ -74,7 +74,7 @@ func TestPersist(t *testing.T) {
 
 	t.Run("Get", func(t *testing.T) {
 		name := "test"
-		m := map[string]interface{}{
+		m := map[interface{}]interface{}{
 			name: "get",
 		}
 

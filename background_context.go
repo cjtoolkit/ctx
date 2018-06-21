@@ -8,11 +8,11 @@ import (
 Background Context
 */
 type BackgroundContext interface {
-	Set(name string, value interface{})
-	Get(name string) interface{}
+	Set(key interface{}, value interface{})
+	Get(key interface{}) interface{}
 
 	// The fn function only gets called if there is a cache miss. Return error as nil to bypass health check.
-	Persist(name string, fn func() (interface{}, error)) interface{}
+	Persist(key interface{}, fn func() (interface{}, error)) interface{}
 }
 
 /*
@@ -24,26 +24,26 @@ func NewBackgroundContext() BackgroundContext {
 	return &backgroundContext{
 		maxAttempt: 5,
 		timeout:    2 * time.Second,
-		ctx:        map[string]interface{}{},
+		ctx:        map[interface{}]interface{}{},
 	}
 }
 
 type backgroundContext struct {
 	maxAttempt int
 	timeout    time.Duration
-	ctx        map[string]interface{}
+	ctx        map[interface{}]interface{}
 }
 
-func (bc *backgroundContext) Set(name string, value interface{}) {
-	_, found := bc.ctx[name]
+func (bc *backgroundContext) Set(key interface{}, value interface{}) {
+	_, found := bc.ctx[key]
 	panicOnFound(found)
-	bc.ctx[name] = value
+	bc.ctx[key] = value
 }
 
-func (bc *backgroundContext) Get(name string) interface{} { return bc.ctx[name] }
+func (bc *backgroundContext) Get(key interface{}) interface{} { return bc.ctx[key] }
 
-func (bc *backgroundContext) Persist(name string, fn func() (interface{}, error)) interface{} {
-	return persistWithHealthCheck(bc.maxAttempt, bc.timeout, bc.ctx, name, fn)
+func (bc *backgroundContext) Persist(key interface{}, fn func() (interface{}, error)) interface{} {
+	return persistWithHealthCheck(bc.maxAttempt, bc.timeout, bc.ctx, key, fn)
 }
 
 /*

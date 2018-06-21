@@ -11,21 +11,21 @@ type lock struct{}
 func persistWithHealthCheck(
 	maxAttempt int,
 	timeout time.Duration,
-	m map[string]interface{},
-	name string,
+	m map[interface{}]interface{},
+	key interface{},
 	fn func() (interface{}, error),
 ) interface{} {
-	if value, found := m[name]; found {
+	if value, found := m[key]; found {
 		return checkForLockOrReturnValue(value)
 	}
-	m[name] = lock{}
+	m[key] = lock{}
 
 	attempt := 0
 
 	for {
 		value, err := fn()
 		if nil == err {
-			m[name] = value
+			m[key] = value
 			return value
 		}
 
@@ -40,14 +40,14 @@ func persistWithHealthCheck(
 	return nil
 }
 
-func persist(m map[string]interface{}, name string, fn func() interface{}) interface{} {
-	if value, found := m[name]; found {
+func persist(m map[interface{}]interface{}, key interface{}, fn func() interface{}) interface{} {
+	if value, found := m[key]; found {
 		return checkForLockOrReturnValue(value)
 	}
-	m[name] = lock{}
+	m[key] = lock{}
 
 	value := fn()
-	m[name] = value
+	m[key] = value
 
 	return value
 }

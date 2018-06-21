@@ -13,16 +13,16 @@ For storing anything related to user request
 type Context interface {
 	Title() string
 	SetTitle(title string)
-	Data(name string) interface{}
-	SetData(name string, value interface{})
+	Data(key interface{}) interface{}
+	SetData(key interface{}, value interface{})
 
 	// The fn function only gets called if there is a cache miss.
-	PersistData(name string, fn func() interface{}) interface{}
-	Dep(name string) interface{}
-	SetDep(name string, value interface{})
+	PersistData(key interface{}, fn func() interface{}) interface{}
+	Dep(key interface{}) interface{}
+	SetDep(key interface{}, value interface{})
 
 	// The fn function only gets called if there is a cache miss.
-	PersistDep(name string, fn func() interface{}) interface{}
+	PersistDep(key interface{}, fn func() interface{}) interface{}
 	Request() *http.Request
 	ResponseWriter() http.ResponseWriter
 }
@@ -36,8 +36,8 @@ Avoid using this concurrently.
 func NewContext(res http.ResponseWriter, req *http.Request) (*http.Request, Context) {
 	ctx := &contextHolder{
 		title: "Untitled",
-		data:  map[string]interface{}{},
-		dep:   map[string]interface{}{},
+		data:  map[interface{}]interface{}{},
+		dep:   map[interface{}]interface{}{},
 		res:   res,
 	}
 
@@ -56,36 +56,36 @@ func GetContext(req *http.Request) Context {
 
 type contextHolder struct {
 	title string
-	data  map[string]interface{}
-	dep   map[string]interface{}
+	data  map[interface{}]interface{}
+	dep   map[interface{}]interface{}
 	req   *http.Request
 	res   http.ResponseWriter
 }
 
-func (c *contextHolder) Title() string                { return c.title }
-func (c *contextHolder) SetTitle(title string)        { c.title = title }
-func (c *contextHolder) Data(name string) interface{} { return c.data[name] }
+func (c *contextHolder) Title() string                    { return c.title }
+func (c *contextHolder) SetTitle(title string)            { c.title = title }
+func (c *contextHolder) Data(key interface{}) interface{} { return c.data[key] }
 
-func (c *contextHolder) SetData(name string, value interface{}) {
-	_, found := c.data[name]
+func (c *contextHolder) SetData(key interface{}, value interface{}) {
+	_, found := c.data[key]
 	panicOnFound(found)
-	c.data[name] = value
+	c.data[key] = value
 }
 
-func (c *contextHolder) PersistData(name string, fn func() interface{}) interface{} {
-	return persist(c.data, name, fn)
+func (c *contextHolder) PersistData(key interface{}, fn func() interface{}) interface{} {
+	return persist(c.data, key, fn)
 }
 
-func (c *contextHolder) Dep(name string) interface{} { return c.dep[name] }
+func (c *contextHolder) Dep(key interface{}) interface{} { return c.dep[key] }
 
-func (c *contextHolder) SetDep(name string, value interface{}) {
-	_, found := c.dep[name]
+func (c *contextHolder) SetDep(key interface{}, value interface{}) {
+	_, found := c.dep[key]
 	panicOnFound(found)
-	c.dep[name] = value
+	c.dep[key] = value
 }
 
-func (c *contextHolder) PersistDep(name string, fn func() interface{}) interface{} {
-	return persist(c.dep, name, fn)
+func (c *contextHolder) PersistDep(key interface{}, fn func() interface{}) interface{} {
+	return persist(c.dep, key, fn)
 }
 
 func (c *contextHolder) Request() *http.Request              { return c.req }
