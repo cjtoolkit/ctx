@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-const contextName = "context-e0881a4717c598b16eb965d396f1aff6"
+type regContext struct{}
 
 /*
 For storing anything related to user request
@@ -14,12 +14,12 @@ type Context interface {
 	Title() string
 	SetTitle(title string)
 	Data(key interface{}) interface{}
-	SetData(key interface{}, value interface{})
+	SetData(key, value interface{})
 
 	// The fn function only gets called if there is a cache miss.
 	PersistData(key interface{}, fn func() interface{}) interface{}
 	Dep(key interface{}) interface{}
-	SetDep(key interface{}, value interface{})
+	SetDep(key, value interface{})
 
 	// The fn function only gets called if there is a cache miss.
 	PersistDep(key interface{}, fn func() interface{}) interface{}
@@ -41,7 +41,7 @@ func NewContext(res http.ResponseWriter, req *http.Request) (*http.Request, Cont
 		res:   res,
 	}
 
-	req = req.WithContext(context.WithValue(req.Context(), contextName, ctx))
+	req = req.WithContext(context.WithValue(req.Context(), regContext{}, ctx))
 	ctx.req = req
 
 	return req, ctx
@@ -51,7 +51,7 @@ func NewContext(res http.ResponseWriter, req *http.Request) (*http.Request, Cont
 Pulls out user context that was saved to the *http.Request.
 */
 func GetContext(req *http.Request) Context {
-	return req.Context().Value(contextName).(Context)
+	return req.Context().Value(regContext{}).(Context)
 }
 
 type contextHolder struct {
@@ -66,7 +66,7 @@ func (c *contextHolder) Title() string                    { return c.title }
 func (c *contextHolder) SetTitle(title string)            { c.title = title }
 func (c *contextHolder) Data(key interface{}) interface{} { return c.data[key] }
 
-func (c *contextHolder) SetData(key interface{}, value interface{}) {
+func (c *contextHolder) SetData(key, value interface{}) {
 	_, found := c.data[key]
 	panicOnFound(found)
 	c.data[key] = value
@@ -78,7 +78,7 @@ func (c *contextHolder) PersistData(key interface{}, fn func() interface{}) inte
 
 func (c *contextHolder) Dep(key interface{}) interface{} { return c.dep[key] }
 
-func (c *contextHolder) SetDep(key interface{}, value interface{}) {
+func (c *contextHolder) SetDep(key, value interface{}) {
 	_, found := c.dep[key]
 	panicOnFound(found)
 	c.dep[key] = value

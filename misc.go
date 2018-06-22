@@ -52,7 +52,7 @@ func persist(m map[interface{}]interface{}, key interface{}, fn func() interface
 	return value
 }
 
-const errMsg = "Already set! Use a different name please!"
+const errMsg = "Collision Detected!"
 
 func panicOnFound(found bool) {
 	if found {

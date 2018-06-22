@@ -8,7 +8,7 @@ import (
 Background Context
 */
 type BackgroundContext interface {
-	Set(key interface{}, value interface{})
+	Set(key, value interface{})
 	Get(key interface{}) interface{}
 
 	// The fn function only gets called if there is a cache miss. Return error as nil to bypass health check.
@@ -34,7 +34,7 @@ type backgroundContext struct {
 	ctx        map[interface{}]interface{}
 }
 
-func (bc *backgroundContext) Set(key interface{}, value interface{}) {
+func (bc *backgroundContext) Set(key, value interface{}) {
 	_, found := bc.ctx[key]
 	panicOnFound(found)
 	bc.ctx[key] = value
