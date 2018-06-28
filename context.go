@@ -23,6 +23,8 @@ type Context interface {
 
 	// The fn function only gets called if there is a cache miss.
 	PersistDep(key interface{}, fn func() interface{}) interface{}
+
+	Ctx() context.Context
 	Request() *http.Request
 	ResponseWriter() http.ResponseWriter
 }
@@ -43,8 +45,25 @@ func NewContext(res http.ResponseWriter, req *http.Request) (*http.Request, Cont
 
 	req = req.WithContext(context.WithValue(req.Context(), regContext{}, ctx))
 	ctx.req = req
+	ctx.ctx = func() context.Context { return req.Context() }
 
 	return req, ctx
+}
+
+/*
+Create new context by context.
+
+Avoid using this concurrently.
+*/
+func NewContextByContext(ctx context.Context) Context {
+	ctxH := &contextHolder{
+		title: "Untitled",
+		data:  map[interface{}]interface{}{},
+		dep:   map[interface{}]interface{}{},
+	}
+	ctxH.ctx = func() context.Context { return ctx }
+
+	return ctxH
 }
 
 /*
@@ -58,6 +77,7 @@ type contextHolder struct {
 	title string
 	data  map[interface{}]interface{}
 	dep   map[interface{}]interface{}
+	ctx   func() context.Context
 	req   *http.Request
 	res   http.ResponseWriter
 }
@@ -88,5 +108,6 @@ func (c *contextHolder) PersistDep(key interface{}, fn func() interface{}) inter
 	return persist(c.dep, key, fn)
 }
 
+func (c *contextHolder) Ctx() context.Context                { return c.ctx() }
 func (c *contextHolder) Request() *http.Request              { return c.req }
 func (c *contextHolder) ResponseWriter() http.ResponseWriter { return c.res }
