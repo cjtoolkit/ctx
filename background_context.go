@@ -18,8 +18,6 @@ type BackgroundContext interface {
 
 /*
 Create new background context.
-
-Avoid using this concurrently.
 */
 func NewBackgroundContext() BackgroundContext {
 	return &backgroundContext{
