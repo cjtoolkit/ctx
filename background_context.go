@@ -1,6 +1,7 @@
 package ctx
 
 import (
+	"sync"
 	"time"
 )
 
@@ -24,23 +25,26 @@ func NewBackgroundContext() BackgroundContext {
 	return &backgroundContext{
 		maxAttempt: 5,
 		timeout:    2 * time.Second,
-		ctx:        map[interface{}]interface{}{},
+		ctx:        &sync.Map{},
 	}
 }
 
 type backgroundContext struct {
 	maxAttempt int
 	timeout    time.Duration
-	ctx        map[interface{}]interface{}
+	ctx        *sync.Map
 }
 
 func (bc *backgroundContext) Set(key, value interface{}) {
-	_, found := bc.ctx[key]
+	_, found := bc.ctx.Load(key)
 	panicOnFound(found)
-	bc.ctx[key] = value
+	bc.ctx.Store(key, value)
 }
 
-func (bc *backgroundContext) Get(key interface{}) interface{} { return bc.ctx[key] }
+func (bc *backgroundContext) Get(key interface{}) interface{} {
+	value, _ := bc.ctx.Load(key)
+	return value
+}
 
 func (bc *backgroundContext) Persist(key interface{}, fn func() (interface{}, error)) interface{} {
 	return persistWithHealthCheck(bc.maxAttempt, bc.timeout, bc.ctx, key, fn)

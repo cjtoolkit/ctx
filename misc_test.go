@@ -2,25 +2,26 @@ package ctx
 
 import (
 	"errors"
+	"sync"
 	"testing"
 )
 
 func TestPersistWithHealthCheck(t *testing.T) {
 	t.Run("No error", func(t *testing.T) {
-		m := map[interface{}]interface{}{}
+		m := &sync.Map{}
 		name := "test"
 
 		persistWithHealthCheck(2, 0, m, name, func() (interface{}, error) {
 			return "valid", nil
 		})
 
-		if m[name].(string) != "valid" {
+		if v, _ := m.Load(name); v.(string) != "valid" {
 			t.Error("Should be 'valid'")
 		}
 	})
 
 	t.Run("Has error on first, none on second", func(t *testing.T) {
-		m := map[interface{}]interface{}{}
+		m := &sync.Map{}
 		name := "test"
 
 		attempt := -1
@@ -32,13 +33,13 @@ func TestPersistWithHealthCheck(t *testing.T) {
 			return nil, errors.New("I am error")
 		})
 
-		if m[name].(string) != "valid" {
+		if v, _ := m.Load(name); v.(string) != "valid" {
 			t.Error("Should be 'valid'")
 		}
 	})
 
 	t.Run("Reach maxAttempt", func(t *testing.T) {
-		m := map[interface{}]interface{}{}
+		m := &sync.Map{}
 		name := "test"
 
 		defer func() {

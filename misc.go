@@ -3,6 +3,7 @@ package ctx
 import (
 	"errors"
 	"log"
+	"sync"
 	"time"
 )
 
@@ -11,21 +12,21 @@ type lock struct{}
 func persistWithHealthCheck(
 	maxAttempt int,
 	timeout time.Duration,
-	m map[interface{}]interface{},
+	m *sync.Map,
 	key interface{},
 	fn func() (interface{}, error),
 ) interface{} {
-	if value, found := m[key]; found {
+	if value, found := m.Load(key); found {
 		return checkForLockOrReturnValue(value)
 	}
-	m[key] = lock{}
+	m.Store(key, lock{})
 
 	attempt := 0
 
 	for {
 		value, err := fn()
 		if nil == err {
-			m[key] = value
+			m.Store(key, value)
 			return value
 		}
 
