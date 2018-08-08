@@ -3,6 +3,7 @@ package ctx
 import (
 	"context"
 	"net/http"
+	"sync"
 )
 
 type regContext struct{}
@@ -32,14 +33,12 @@ type Context interface {
 /*
 Create new context for user request, also saves context inside *http.Request
 without disturbing the context of the user request.
-
-Avoid using this concurrently.
 */
 func NewContext(res http.ResponseWriter, req *http.Request) (*http.Request, Context) {
 	ctx := &contextHolder{
 		title: "Untitled",
-		data:  map[interface{}]interface{}{},
-		dep:   map[interface{}]interface{}{},
+		data:  &sync.Map{},
+		dep:   &sync.Map{},
 		res:   res,
 	}
 
@@ -52,14 +51,12 @@ func NewContext(res http.ResponseWriter, req *http.Request) (*http.Request, Cont
 
 /*
 Create new context by context.
-
-Avoid using this concurrently.
 */
 func NewContextByContext(ctx context.Context) Context {
 	ctxH := &contextHolder{
 		title: "Untitled",
-		data:  map[interface{}]interface{}{},
-		dep:   map[interface{}]interface{}{},
+		data:  &sync.Map{},
+		dep:   &sync.Map{},
 	}
 	ctxH.ctx = func() context.Context { return ctx }
 
@@ -74,34 +71,53 @@ func GetContext(req *http.Request) Context {
 }
 
 type contextHolder struct {
+	rw    sync.RWMutex
 	title string
-	data  map[interface{}]interface{}
-	dep   map[interface{}]interface{}
+	data  *sync.Map
+	dep   *sync.Map
 	ctx   func() context.Context
 	req   *http.Request
 	res   http.ResponseWriter
 }
 
-func (c *contextHolder) Title() string                    { return c.title }
-func (c *contextHolder) SetTitle(title string)            { c.title = title }
-func (c *contextHolder) Data(key interface{}) interface{} { return c.data[key] }
+func (c *contextHolder) Title() string {
+	c.rw.RLock()
+	title := c.title
+	c.rw.RUnlock()
+
+	return title
+}
+
+func (c *contextHolder) SetTitle(title string) {
+	c.rw.Lock()
+	c.title = title
+	c.rw.Unlock()
+}
+
+func (c *contextHolder) Data(key interface{}) interface{} {
+	data, _ := c.data.Load(key)
+	return data
+}
 
 func (c *contextHolder) SetData(key, value interface{}) {
-	_, found := c.data[key]
+	_, found := c.data.Load(key)
 	panicOnFound(found)
-	c.data[key] = value
+	c.data.Store(key, value)
 }
 
 func (c *contextHolder) PersistData(key interface{}, fn func() interface{}) interface{} {
 	return persist(c.data, key, fn)
 }
 
-func (c *contextHolder) Dep(key interface{}) interface{} { return c.dep[key] }
+func (c *contextHolder) Dep(key interface{}) interface{} {
+	dep, _ := c.dep.Load(key)
+	return dep
+}
 
 func (c *contextHolder) SetDep(key, value interface{}) {
-	_, found := c.dep[key]
+	_, found := c.dep.Load(key)
 	panicOnFound(found)
-	c.dep[key] = value
+	c.dep.Store(key, value)
 }
 
 func (c *contextHolder) PersistDep(key interface{}, fn func() interface{}) interface{} {

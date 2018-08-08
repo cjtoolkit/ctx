@@ -62,28 +62,27 @@ func TestPersistWithHealthCheck(t *testing.T) {
 func TestPersist(t *testing.T) {
 	t.Run("Set", func(t *testing.T) {
 		name := "test"
-		m := map[interface{}]interface{}{}
+		m := &sync.Map{}
 
 		persist(m, name, func() interface{} {
 			return "set"
 		})
 
-		if m[name].(string) != "set" {
+		if value, _ := m.Load(name); value.(string) != "set" {
 			t.Error("Should be 'set'")
 		}
 	})
 
 	t.Run("Get", func(t *testing.T) {
 		name := "test"
-		m := map[interface{}]interface{}{
-			name: "get",
-		}
+		m := &sync.Map{}
+		m.Store(name, "get")
 
 		persist(m, name, func() interface{} {
 			return "set"
 		})
 
-		if m[name].(string) != "get" {
+		if value, _ := m.Load(name); value.(string) != "get" {
 			t.Error("Should be 'get'")
 		}
 	})
