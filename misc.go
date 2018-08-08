@@ -48,7 +48,7 @@ func persist(m *sync.Map, key interface{}, fn func() interface{}) interface{} {
 	m.Store(key, lock{})
 
 	value := fn()
-	m.Store(key, fn())
+	m.Store(key, value)
 
 	return value
 }
