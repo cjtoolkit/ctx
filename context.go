@@ -19,11 +19,6 @@ type Context interface {
 
 	// The fn function only gets called if there is a cache miss.
 	PersistData(key interface{}, fn func() interface{}) interface{}
-	Dep(key interface{}) interface{}
-	SetDep(key, value interface{})
-
-	// The fn function only gets called if there is a cache miss.
-	PersistDep(key interface{}, fn func() interface{}) interface{}
 
 	Ctx() context.Context
 	Request() *http.Request
@@ -107,21 +102,6 @@ func (c *contextHolder) SetData(key, value interface{}) {
 
 func (c *contextHolder) PersistData(key interface{}, fn func() interface{}) interface{} {
 	return persist(c.data, key, fn)
-}
-
-func (c *contextHolder) Dep(key interface{}) interface{} {
-	dep, _ := c.dep.Load(key)
-	return dep
-}
-
-func (c *contextHolder) SetDep(key, value interface{}) {
-	_, found := c.dep.Load(key)
-	panicOnFound(found)
-	c.dep.Store(key, value)
-}
-
-func (c *contextHolder) PersistDep(key interface{}, fn func() interface{}) interface{} {
-	return persist(c.dep, key, fn)
 }
 
 func (c *contextHolder) Ctx() context.Context                { return c.ctx() }
