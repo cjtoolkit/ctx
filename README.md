@@ -11,7 +11,7 @@ Just a simple context system for background and user request.
 
 ## Usage
 
-It's useful for storing configuration and dependencies (Dependency Injection) without having too rely too much on side effect.
+It's useful for storing configuration and dependencies (Dependency Injection) without having to rely on side effect.
 
 ## Example
 
