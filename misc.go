@@ -41,14 +41,14 @@ func persistWithHealthCheck(
 	return nil
 }
 
-func persist(m map[interface{}]interface{}, key interface{}, fn func() interface{}) interface{} {
-	if value, found := m[key]; found {
+func persist(m *sync.Map, key interface{}, fn func() interface{}) interface{} {
+	if value, found := m.Load(key); found {
 		return checkForLockOrReturnValue(value)
 	}
-	m[key] = lock{}
+	m.Store(key, lock{})
 
 	value := fn()
-	m[key] = value
+	m.Store(key, value)
 
 	return value
 }
