@@ -20,7 +20,7 @@ Create new context for user request, also saves context inside *http.Request
 without disturbing the context of the user request.
 */
 func NewContext(req *http.Request, res http.ResponseWriter) *http.Request {
-	newReq := req.Clone(req.Context())
+	newReq := &http.Request{}
 	_context := ctx.NewContextWithMap(map[interface{}]interface{}{
 		internal.RequestKey{}:         newReq,
 		internal.OriginalRequestKey{}: req,
@@ -34,7 +34,7 @@ func NewContext(req *http.Request, res http.ResponseWriter) *http.Request {
 		*newReq = *reqWithContext
 	}
 
-	return req
+	return newReq
 }
 
 /*
