@@ -7,7 +7,7 @@ Just a simple context system.
 
 ## Installation
 
-`go get github.com/cjtoolkit/ctx`
+`go get github.com/cjtoolkit/ctx/v2`
 
 ## Usage
 
