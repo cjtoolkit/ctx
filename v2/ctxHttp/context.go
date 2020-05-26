@@ -20,16 +20,18 @@ Create new context for user request, also saves context inside *http.Request
 without disturbing the context of the user request.
 */
 func NewContext(req *http.Request, res http.ResponseWriter) *http.Request {
+	newReq := req.Clone(req.Context())
 	_context := ctx.NewContextWithMap(map[interface{}]interface{}{
-		internal.RequestKey{}:   req,
-		internal.ResponseKey{}:  res,
-		internal.GoContextKey{}: req.Context(),
-		internal.TitleKey{}:     &title{Title: "Untitled"},
+		internal.RequestKey{}:         newReq,
+		internal.OriginalRequestKey{}: req,
+		internal.ResponseKey{}:        res,
+		internal.GoContextKey{}:       req.Context(),
+		internal.TitleKey{}:           &title{Title: "Untitled"},
 	})
 
 	{
-		newReq := req.WithContext(context.WithValue(req.Context(), httpKey{}, _context))
-		*req = *newReq
+		reqWithContext := req.WithContext(context.WithValue(req.Context(), httpKey{}, _context))
+		*newReq = *reqWithContext
 	}
 
 	return req
@@ -47,6 +49,17 @@ Pulls out request from context.
 */
 func Request(context ctx.Context) *http.Request {
 	v, found := context.Get(internal.RequestKey{})
+	if !found {
+		panic(errors.New("request is not found"))
+	}
+	return v.(*http.Request)
+}
+
+/*
+Pulls out original request from context.
+*/
+func OriginalRequest(context ctx.Context) *http.Request {
+	v, found := context.Get(internal.OriginalRequestKey{})
 	if !found {
 		panic(errors.New("request is not found"))
 	}

@@ -1,9 +1,10 @@
 package internal
 
 type (
-	Lock         struct{}
-	GoContextKey struct{}
-	RequestKey   struct{}
-	ResponseKey  struct{}
-	TitleKey     struct{}
+	Lock               struct{}
+	GoContextKey       struct{}
+	RequestKey         struct{}
+	OriginalRequestKey struct{}
+	ResponseKey        struct{}
+	TitleKey           struct{}
 )
