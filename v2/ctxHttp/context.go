@@ -27,7 +27,12 @@ func NewContext(req *http.Request, res http.ResponseWriter) *http.Request {
 		internal.TitleKey{}:     &title{Title: "Untitled"},
 	})
 
-	return req.WithContext(context.WithValue(req.Context(), httpKey{}, _context))
+	{
+		newReq := req.WithContext(context.WithValue(req.Context(), httpKey{}, _context))
+		*req = *newReq
+	}
+
+	return req
 }
 
 /*
