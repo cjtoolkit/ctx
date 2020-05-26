@@ -3,7 +3,7 @@
 
 # CJToolkit Context System
 
-Just a simple context system for background and user request.
+Just a simple context system.
 
 ## Installation
 
@@ -31,7 +31,7 @@ type Config struct {
 	DbRsn string `json:"DbRsn"`
 }
 
-func GetConfig(context ctx.BackgroundContext) Config {
+func GetConfig(context ctx.Context) Config {
 	type ConfigContext struct{}
 	return context.Persist(ConfigContext{}, func() (interface{}, error) {
 		return initConfig(), nil
@@ -53,14 +53,14 @@ func initConfig() (config Config) {
 	return
 }
 
-func GetDatabaseConnection(context ctx.BackgroundContext) *sql.DB {
+func GetDatabaseConnection(context ctx.Context) *sql.DB {
 	type DatabaseContext struct{}
 	return context.Persist(DatabaseContext{}, func() (interface{}, error) {
 		return initDatabaseConnection(context)
 	}).(*sql.DB)
 }
 
-func initDatabaseConnection(context ctx.BackgroundContext) (*sql.DB, error) {
+func initDatabaseConnection(context ctx.Context) (*sql.DB, error) {
 	return sql.Open("postgres", GetConfig(context).DbRsn)
 }
 ```
