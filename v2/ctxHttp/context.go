@@ -78,7 +78,7 @@ func Response(context ctx.Context) http.ResponseWriter {
 }
 
 /*
-Alias os Response
+Alias of Response
 */
 func ResponseWriter(context ctx.Context) http.ResponseWriter { return Response(context) }
 
