@@ -66,7 +66,7 @@ func OriginalRequest(context ctx.Context) *http.Request {
 	return v.(*http.Request)
 }
 
-/**
+/*
 Pulls out response from context
 */
 func Response(context ctx.Context) http.ResponseWriter {
@@ -76,6 +76,11 @@ func Response(context ctx.Context) http.ResponseWriter {
 	}
 	return v.(http.ResponseWriter)
 }
+
+/*
+Alias os Response
+*/
+func ResponseWriter(context ctx.Context) http.ResponseWriter { return Response(context) }
 
 /**
 Pulls out title from context
@@ -88,7 +93,7 @@ func Title(context ctx.Context) string {
 	return v.(*title).Title
 }
 
-/**
+/*
 Set title from inside context.
 */
 func SetTitle(context ctx.Context, titleStr string) {
@@ -97,4 +102,18 @@ func SetTitle(context ctx.Context, titleStr string) {
 		return
 	}
 	v.(*title).Title = titleStr
+}
+
+/*
+Execute Http Handler
+*/
+func ExecuteHttpHandler(context ctx.Context, handler http.Handler) {
+	handler.ServeHTTP(Response(context), Request(context))
+}
+
+/*
+Execute Http Handler Function
+*/
+func ExecuteHttpHandlerFunc(context ctx.Context, handlerFunc http.HandlerFunc) {
+	ExecuteHttpHandler(context, handlerFunc)
 }

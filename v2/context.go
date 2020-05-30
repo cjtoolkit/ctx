@@ -11,7 +11,10 @@ import (
 )
 
 type Context interface {
+	// Set content to map, cannot use the same key value over and over again, otherwise it will panic.
 	Set(key, value interface{})
+
+	// Get content from map, return two values, the bool value indicated if it was found or not.
 	Get(key interface{}) (interface{}, bool)
 
 	// The fn function only gets called if there is a cache miss. Return error as nil to bypass health check.
@@ -122,13 +125,20 @@ func (c *contextBase) Persist(key interface{}, fn func() (interface{}, error)) i
 /*
 Get Go Context
 */
-func GetGoContext(context Context) goContext.Context {
+func GoContext(context Context) goContext.Context {
 	v, found := context.Get(internal.GoContextKey{})
 	if !found {
 		panic(errors.New("go context is not found"))
 	}
 	return v.(goContext.Context)
 }
+
+/**
+Get Go Context
+
+Deprecated: Use GoContext function instead. Will be removed in 3.0
+*/
+func GetGoContext(context Context) goContext.Context { return GoContext(context) }
 
 /*
 Clear Background Context, best used with a defer function after creating the new context.
