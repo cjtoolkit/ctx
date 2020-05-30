@@ -133,7 +133,7 @@ func GoContext(context Context) goContext.Context {
 	return v.(goContext.Context)
 }
 
-/**
+/*
 Get Go Context
 
 Deprecated: Use GoContext function instead. Will be removed in 3.0
