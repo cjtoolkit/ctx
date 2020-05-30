@@ -1,4 +1,4 @@
-[![](https://godoc.org/github.com/cjtoolkit/ctx?status.svg)](http://godoc.org/github.com/cjtoolkit/ctx)
+[![](https://godoc.org/github.com/cjtoolkit/ctx?status.svg)](https://pkg.go.dev/github.com/cjtoolkit/ctx/v2?tab=doc)
 [![Build Status](https://travis-ci.org/cjtoolkit/ctx.svg?branch=master)](https://travis-ci.org/cjtoolkit/ctx)
 
 # CJToolkit Context System
