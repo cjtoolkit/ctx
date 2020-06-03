@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"net/url"
 
 	"github.com/cjtoolkit/ctx/v2"
 	"github.com/cjtoolkit/ctx/v2/internal"
@@ -116,4 +117,14 @@ Execute Http Handler Function
 */
 func ExecuteHttpHandlerFunc(context ctx.Context, handlerFunc http.HandlerFunc) {
 	ExecuteHttpHandler(context, handlerFunc)
+}
+
+/*
+Get Parsed Url Query
+*/
+func UrlQuery(context ctx.Context) url.Values {
+	type key struct{}
+	return context.Persist(key{}, func() (interface{}, error) {
+		return url.ParseQuery(Request(context).URL.RawQuery)
+	}).(url.Values)
 }

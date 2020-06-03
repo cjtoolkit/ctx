@@ -22,10 +22,8 @@ type Context interface {
 }
 
 type contextBase struct {
-	maxAttempt int
-	timeout    time.Duration
-	mutex      *sync.Mutex
-	ctxMap     map[interface{}]interface{}
+	mutex  *sync.Mutex
+	ctxMap map[interface{}]interface{}
 }
 
 /*
@@ -33,9 +31,7 @@ New Context, default max attempt is 1 and timeout is 0
 */
 func NewContext(context goContext.Context) Context {
 	return &contextBase{
-		maxAttempt: 1,
-		timeout:    0,
-		mutex:      &sync.Mutex{},
+		mutex: &sync.Mutex{},
 		ctxMap: map[interface{}]interface{}{
 			internal.GoContextKey{}: context,
 		},
@@ -47,10 +43,8 @@ New Context with Map, default max attempt is 1 and timeout is 0
 */
 func NewContextWithMap(m map[interface{}]interface{}) Context {
 	return &contextBase{
-		maxAttempt: 1,
-		timeout:    0,
-		mutex:      &sync.Mutex{},
-		ctxMap:     m,
+		mutex:  &sync.Mutex{},
+		ctxMap: m,
 	}
 }
 
@@ -59,11 +53,13 @@ New Background Context, default max attempt is 5 and timeout is 2 seconds
 */
 func NewBackgroundContext() Context {
 	return &contextBase{
-		maxAttempt: 5,
-		timeout:    2 * time.Second,
-		mutex:      &sync.Mutex{},
+		mutex: &sync.Mutex{},
 		ctxMap: map[interface{}]interface{}{
 			internal.GoContextKey{}: goContext.Background(),
+			settingsKey{}: &Settings{
+				MaxAttempt: 5,
+				Timeout:    2 * time.Second,
+			},
 		},
 	}
 }
@@ -99,6 +95,7 @@ func (c *contextBase) Persist(key interface{}, fn func() (interface{}, error)) i
 		return internal.CheckForLockOrReturnValue(v)
 	}
 	c.set(key, internal.Lock{})
+	settings := c.settings()
 	c.mutex.Unlock()
 
 	attempt := 0
@@ -113,10 +110,10 @@ func (c *contextBase) Persist(key interface{}, fn func() (interface{}, error)) i
 		}
 
 		attempt++
-		if attempt >= c.maxAttempt {
+		if attempt >= settings.MaxAttempt {
 			log.Panic(err)
 		}
-		time.Sleep(c.timeout)
+		time.Sleep(settings.Timeout)
 	}
 
 	return nil
@@ -153,22 +150,18 @@ func ClearContext(context Context) {
 
 /*
 Set Health Check Max Attempt on Background Context
+
+Deprecated: Use ContextSettings instead. Will be removed in 3.0
 */
 func SetMaxAttempt(context Context, maxAttempt int) {
-	if context, ok := context.(*contextBase); ok {
-		context.mutex.Lock()
-		context.maxAttempt = maxAttempt
-		context.mutex.Unlock()
-	}
+	ContextSettings(context).MaxAttempt = maxAttempt
 }
 
 /*
 Set Health Check Time Out on Background Context
+
+Deprecated: Use ContextSettings instead. Will be remove in 3.0
 */
 func SetTimeout(context Context, timeout time.Duration) {
-	if context, ok := context.(*contextBase); ok {
-		context.mutex.Lock()
-		context.timeout = timeout
-		context.mutex.Unlock()
-	}
+	ContextSettings(context).Timeout = timeout
 }
